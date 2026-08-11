@@ -34,9 +34,9 @@ CREATE TABLE IF NOT EXISTS employee_metrics (
 CREATE TABLE IF NOT EXISTS predictions (
     prediction_id           SERIAL PRIMARY KEY,
     employee_id              INTEGER REFERENCES employees(employee_id) ON DELETE CASCADE,
-    model_name               VARCHAR(50),         -- e.g. 'dataset1_attrition_rf_v1'
+    model_name               VARCHAR(50),      
     model_version             VARCHAR(20),
-    attrition_probability     NUMERIC(5,4),         -- 0.0000 to 1.0000
+    attrition_probability     NUMERIC(5,4),        
     predicted_label           BOOLEAN,
     predicted_at              TIMESTAMP DEFAULT NOW()
 );
