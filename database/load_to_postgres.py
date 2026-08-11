@@ -1,16 +1,3 @@
-"""
-AI Workforce Analytics — PostgreSQL Data Loader (Simple Version)
-
-Uses psycopg2 directly (no SQLAlchemy). Three steps:
-  1. Connect to the database
-  2. Create tables from schema.sql (if they don't exist)
-  3. Load the cleaned + feature-engineered CSVs into the tables
-
-Easy to explain in a demo:
-  "We connect with psycopg2, run our schema.sql to build the tables,
-   then read the CSVs with pandas and bulk-insert the rows."
-"""
-
 import os
 from pathlib import Path
 
@@ -19,10 +6,6 @@ import psycopg2
 from psycopg2.extras import execute_values
 from dotenv import load_dotenv
 
-# ============================================================
-# 1. PROJECT PATHS
-# ============================================================
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_PATH = BASE_DIR / ".env"
 load_dotenv(ENV_PATH)
@@ -30,10 +13,6 @@ load_dotenv(ENV_PATH)
 CLEANED_PATH = BASE_DIR / "data" / "processed" / "employee_attrition_cleaned_dataset.csv"
 FEATURES_PATH = BASE_DIR / "Machine Learning" / "dataset1_feature_engineered_final.csv"
 SCHEMA_PATH = BASE_DIR / "database" / "schema.sql"
-
-# ============================================================
-# 2. TABLE COLUMNS (must match schema.sql, minus auto/serial fields)
-# ============================================================
 
 EMPLOYEES_COLS = [
     "employee_id", "age", "gender", "marital_status", "education_level",
@@ -48,11 +27,6 @@ METRICS_COLS = [
     "long_commute_flag", "high_performer_flag", "training_hours_last_year",
     "attrition",
 ]
-
-# ============================================================
-# 3. CONNECT TO POSTGRES
-# ============================================================
-
 def get_connection():
     required = ["DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT", "DB_NAME"]
     missing = [v for v in required if not os.environ.get(v)]
@@ -70,11 +44,6 @@ def get_connection():
         sslmode="require" if use_ssl else "prefer",
     )
     return conn
-
-# ============================================================
-# 4. APPLY SCHEMA
-# ============================================================
-
 def apply_schema(conn):
     if not SCHEMA_PATH.exists():
         raise FileNotFoundError(f"schema.sql not found at:\n{SCHEMA_PATH}")
@@ -101,11 +70,6 @@ def apply_schema(conn):
         cur.execute(schema_sql)
     conn.commit()
     print("Schema applied (tables created if they didn't already exist).")
-
-# ============================================================
-# 5. BUILD DATAFRAMES FROM CSVs
-# ============================================================
-
 def build_tables():
     if not CLEANED_PATH.exists():
         raise FileNotFoundError(f"Cleaned dataset not found at:\n{CLEANED_PATH}")
@@ -148,11 +112,6 @@ def build_tables():
 
     print(f"Employees rows: {len(employees_df)} | Metrics rows: {len(metrics_df)}")
     return employees_df, metrics_df
-
-# ============================================================
-# 6. LOAD DATA (bulk insert with execute_values)
-# ============================================================
-
 def load(conn, employees_df, metrics_df):
     with conn.cursor() as cur:
         # Clear old data but keep the table structure
@@ -184,11 +143,6 @@ def load(conn, employees_df, metrics_df):
         print(f"Loaded {len(metrics_rows)} rows into employee_metrics")
 
     print("Data committed successfully.")
-
-# ============================================================
-# 7. MAIN
-# ============================================================
-
 def main():
     print("Connecting to PostgreSQL...")
     conn = get_connection()
