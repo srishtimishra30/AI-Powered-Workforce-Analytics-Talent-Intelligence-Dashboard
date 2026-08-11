@@ -47,10 +47,6 @@ def get_connection():
 def apply_schema(conn):
     if not SCHEMA_PATH.exists():
         raise FileNotFoundError(f"schema.sql not found at:\n{SCHEMA_PATH}")
-
-    # Check if tables already exist (e.g. you ran schema.sql manually in
-    # the Supabase SQL Editor) — if so, skip re-applying it through the
-    # pooler, which can hit a statement timeout on some connections.
     with conn.cursor() as cur:
         cur.execute("""
             SELECT EXISTS (
@@ -114,7 +110,7 @@ def build_tables():
     return employees_df, metrics_df
 def load(conn, employees_df, metrics_df):
     with conn.cursor() as cur:
-        # Clear old data but keep the table structure
+        
         print("Truncating existing data...")
         cur.execute("TRUNCATE TABLE employee_metrics, employees RESTART IDENTITY CASCADE;")
         conn.commit()
