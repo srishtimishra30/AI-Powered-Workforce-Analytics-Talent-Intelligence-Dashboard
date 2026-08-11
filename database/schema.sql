@@ -41,7 +41,6 @@ CREATE TABLE IF NOT EXISTS predictions (
     predicted_at              TIMESTAMP DEFAULT NOW()
 );
 
--- Indexes for common dashboard queries
 CREATE INDEX IF NOT EXISTS idx_employees_department ON employees(department);
 CREATE INDEX IF NOT EXISTS idx_metrics_attrition ON employee_metrics(attrition);
 CREATE INDEX IF NOT EXISTS idx_metrics_employee_id ON employee_metrics(employee_id);
