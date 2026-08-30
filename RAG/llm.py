@@ -81,7 +81,6 @@ def query_huggingface_fallback(question: str, context: str) -> str:
     outputs = _fallback_model.generate(**inputs, max_new_tokens=150, do_sample=False)
     output_text = _fallback_tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
     
-    # Clean up formatting artifacts if present
     if "---" in output_text:
         output_text = output_text.split("---")[0].strip()
 
@@ -96,7 +95,6 @@ def generate_answer(
     
     formatted_prompt = prompt.format(context=context, question=question)
 
-    # 1. Attempt Ollama inference
     answer = query_ollama(
         formatted_prompt=formatted_prompt,
         model_name=model_name,
