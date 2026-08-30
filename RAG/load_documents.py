@@ -1,8 +1,7 @@
 from pathlib import Path
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 
-# Path to our knowledge-base documents
-DOCUMENTS_PATH = Path("C:/Users/dell/OneDrive/Desktop/RAG/knowledge_base/documents")
+DOCUMENTS_PATH = Path(__file__).parent / "knowledge_base" / "documents"
 
 # Load all Markdown files
 loader = DirectoryLoader(
