@@ -6,19 +6,8 @@ from langchain_chroma import Chroma
 
 from chunk_documents import create_chunks
 
-
-
-# ============================================================
-# PATHS
-# ============================================================
-
 BASE_DIR = Path(__file__).parent
 VECTORSTORE_PATH = BASE_DIR / "vectorstore"
-
-
-# ============================================================
-# LOAD STRUCTURED CHUNKS
-# ============================================================
 
 print("=" * 70)
 print("LOADING STRUCTURED CHUNKS")
@@ -28,22 +17,12 @@ chunks = create_chunks()
 
 print(f"Total chunks loaded: {len(chunks)}")
 
-
-# ============================================================
-# DISPLAY CHUNK INFORMATION
-# ============================================================
-
 for chunk in chunks:
 
     print(f"\nChunk ID: {chunk.metadata.get('chunk_id')}")
     print(f"Parent ID: {chunk.metadata.get('parent_id')}")
     print(f"Document: {chunk.metadata.get('document_name')}")
     print(f"Section: {chunk.metadata.get('section')}")
-
-
-# ============================================================
-# LOAD EMBEDDING MODEL
-# ============================================================
 
 print("\n")
 print("=" * 70)
@@ -55,11 +34,6 @@ embeddings = HuggingFaceEmbeddings(
 )
 
 print("Embedding model loaded.")
-
-
-# ============================================================
-# CREATE CHROMA VECTOR DATABASE
-# ============================================================
 
 print("\n")
 print("=" * 70)
@@ -76,11 +50,6 @@ vectorstore = Chroma.from_documents(
     collection_name="workforce_knowledge"
 )
 
-
-# ============================================================
-# VERIFY
-# ============================================================
-
 print("\n")
 print("=" * 70)
 print("VECTOR DATABASE CREATED SUCCESSFULLY")
@@ -88,11 +57,6 @@ print("=" * 70)
 
 print(f"Location: {VECTORSTORE_PATH}")
 print(f"Documents embedded: {len(chunks)}")
-
-
-# ============================================================
-# TEST RETRIEVAL
-# ============================================================
 
 test_query = "What are the guidelines for employee workload?"
 
