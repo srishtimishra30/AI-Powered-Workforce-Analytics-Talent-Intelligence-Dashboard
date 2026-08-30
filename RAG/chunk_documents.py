@@ -7,11 +7,6 @@ from langchain_community.document_loaders import (
 
 from langchain_text_splitters import MarkdownHeaderTextSplitter
 
-
-# ============================================================
-# PATHS
-# ============================================================
-
 BASE_DIR = Path(__file__).parent
 
 DOCUMENTS_PATH = BASE_DIR / "knowledge_base" / "documents"

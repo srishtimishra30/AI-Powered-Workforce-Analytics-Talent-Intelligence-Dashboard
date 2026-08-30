@@ -3,7 +3,7 @@ from langchain_community.document_loaders import DirectoryLoader, TextLoader
 
 DOCUMENTS_PATH = Path(__file__).parent / "knowledge_base" / "documents"
 
-# Load all Markdown files
+
 loader = DirectoryLoader(
     path = str(DOCUMENTS_PATH),
     glob="*.md",

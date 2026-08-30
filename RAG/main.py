@@ -1,11 +1,6 @@
 from hybrid_retrieve import hybrid_retrieve
 from llm import generate_answer
 
-
-# ============================================================
-# RUN COMPLETE RAG PIPELINE
-# ============================================================
-
 def run_rag_pipeline(
     question: str,
     model_name: str = "llama3",
@@ -33,8 +28,6 @@ def run_rag_pipeline(
         print("\n" + "=" * 70)
         print(f"QUESTION: {question}")
         print("=" * 70)
-
-    # 1. Retrieve final expanded context
     retrieval_output = hybrid_retrieve(
         query=question,
         retrieval_k=5,
@@ -49,8 +42,6 @@ def run_rag_pipeline(
         print("FINAL RETRIEVED CONTEXT (passed to LLM):")
         print("-" * 70)
         print(final_context)
-
-    # 2. Generate answer with LLM
     answer = generate_answer(
         question=question,
         context=final_context,
@@ -64,11 +55,6 @@ def run_rag_pipeline(
         print(answer)
 
     return answer
-
-
-# ============================================================
-# MAIN DRIVER & TEST SUITE
-# ============================================================
 
 if __name__ == "__main__":
 

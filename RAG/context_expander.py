@@ -2,42 +2,11 @@ from typing import List
 
 from langchain_core.documents import Document
 
-
-# ============================================================
-# CONTEXT EXPANSION
-# ============================================================
-
 def expand_context(
     ranked_documents: List[Document],
     all_chunks: List[Document],
     window_size: int = 1
 ) -> List[Document]:
-    """
-    Expand reranked chunks with neighboring chunks
-    from the same document.
-
-    Parameters
-    ----------
-    ranked_documents:
-        Documents returned by the reranker.
-
-    all_chunks:
-        Complete list of chunks from the knowledge base.
-
-    window_size:
-        Number of neighboring chunks to include
-        before and after each ranked chunk.
-
-    Returns
-    -------
-    List[Document]
-        Expanded context.
-    """
-
-    # ========================================================
-    # INDEX ALL CHUNKS
-    # ========================================================
-
     document_chunks = {}
 
     for chunk in all_chunks:
@@ -52,10 +21,6 @@ def expand_context(
 
         document_chunks[document_name].append(chunk)
 
-    # ========================================================
-    # SORT CHUNKS
-    # ========================================================
-
     for document_name in document_chunks:
 
         document_chunks[document_name].sort(
@@ -63,10 +28,6 @@ def expand_context(
                 chunk.metadata.get("chunk_id", 0)
             )
         )
-
-    # ========================================================
-    # COLLECT EXPANDED CONTEXT
-    # ========================================================
 
     expanded_chunks = {}
 
@@ -85,9 +46,6 @@ def expand_context(
 
         chunks = document_chunks[document_name]
 
-        # ----------------------------------------------------
-        # Find position of ranked chunk
-        # ----------------------------------------------------
 
         target_index = None
 
@@ -101,10 +59,6 @@ def expand_context(
         if target_index is None:
             continue
 
-        # ----------------------------------------------------
-        # Calculate context window
-        # ----------------------------------------------------
-
         start_index = max(
             0,
             target_index - window_size
@@ -115,9 +69,6 @@ def expand_context(
             target_index + window_size + 1
         )
 
-        # ----------------------------------------------------
-        # Add neighboring chunks
-        # ----------------------------------------------------
 
         for chunk in chunks[
             start_index:end_index
@@ -132,10 +83,6 @@ def expand_context(
                 expanded_chunks[
                     current_chunk_id
                 ] = chunk
-
-    # ========================================================
-    # RESTORE ORIGINAL ORDER
-    # ========================================================
 
     expanded_context = sorted(
         expanded_chunks.values(),

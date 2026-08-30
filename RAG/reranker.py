@@ -1,10 +1,5 @@
 from sentence_transformers import CrossEncoder
 
-
-# ============================================================
-# RERANKER MODEL
-# ============================================================
-
 MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 print("=" * 70)
@@ -15,20 +10,10 @@ reranker = CrossEncoder(MODEL_NAME)
 
 print("Reranker loaded successfully.")
 
-
-# ============================================================
-# RERANK FUNCTION
-# ============================================================
-
 def rerank_documents(query, documents, top_k=3):
 
     if not documents:
         return []
-
-    # --------------------------------------------------------
-    # Create query-document pairs
-    # --------------------------------------------------------
-
     pairs = []
 
     for document in documents:
@@ -40,15 +25,7 @@ def rerank_documents(query, documents, top_k=3):
             )
         )
 
-    # --------------------------------------------------------
-    # Calculate relevance scores
-    # --------------------------------------------------------
-
     scores = reranker.predict(pairs)
-
-    # --------------------------------------------------------
-    # Attach scores to documents
-    # --------------------------------------------------------
 
     ranked_documents = []
 
@@ -61,18 +38,9 @@ def rerank_documents(query, documents, top_k=3):
             )
         )
 
-    # --------------------------------------------------------
-    # Sort by reranker score
-    # Higher = more relevant
-    # --------------------------------------------------------
-
     ranked_documents.sort(
         key=lambda x: x[0],
         reverse=True
     )
-
-    # --------------------------------------------------------
-    # Return top K
-    # --------------------------------------------------------
 
     return ranked_documents[:top_k]
