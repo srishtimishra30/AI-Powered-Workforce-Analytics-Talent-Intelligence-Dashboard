@@ -14,20 +14,10 @@ from langchain_text_splitters import MarkdownHeaderTextSplitter
 
 BASE_DIR = Path(__file__).parent
 
-DOCUMENTS_PATH = Path(
-    "C:/Users/dell/OneDrive/Desktop/RAG/knowledge_base/documents"
-)
+DOCUMENTS_PATH = BASE_DIR / "knowledge_base" / "documents"
 
-
-# ============================================================
-# CREATE STRUCTURED CHUNKS
-# ============================================================
 
 def create_chunks():
-
-    # --------------------------------------------------------
-    # LOAD MARKDOWN DOCUMENTS
-    # --------------------------------------------------------
 
     loader = DirectoryLoader(
         str(DOCUMENTS_PATH),
@@ -37,11 +27,6 @@ def create_chunks():
     )
 
     documents = loader.load()
-
-
-    # --------------------------------------------------------
-    # MARKDOWN HEADER SPLITTER
-    # --------------------------------------------------------
 
     headers_to_split_on = [
         ("#", "Header 1"),
@@ -53,11 +38,6 @@ def create_chunks():
         strip_headers=True
     )
 
-
-    # --------------------------------------------------------
-    # CREATE STRUCTURED CHUNKS
-    # --------------------------------------------------------
-
     all_chunks = []
 
     chunk_id = 0
@@ -67,7 +47,6 @@ def create_chunks():
 
         source = document.metadata["source"]
 
-        # Extract document name
         document_name = Path(source).stem
 
 
@@ -82,11 +61,6 @@ def create_chunks():
 
             metadata = section.metadata
 
-
-            # ------------------------------------------------
-            # HEADER INFORMATION
-            # ------------------------------------------------
-
             header_1 = metadata.get(
                 "Header 1",
                 document_name
@@ -97,10 +71,6 @@ def create_chunks():
                 ""
             )
 
-
-            # ------------------------------------------------
-            # ADD METADATA
-            # ------------------------------------------------
 
             section.metadata["document_name"] = document_name
 
@@ -115,12 +85,6 @@ def create_chunks():
             section.metadata["parent_id"] = (
                 f"{document_name}_{header_1}"
             )
-
-
-            # ------------------------------------------------
-            # CREATE STRUCTURED CONTENT
-            # ------------------------------------------------
-
             section_title = header_2.strip().rstrip(":") if header_2 else header_1.strip()
 
             structured_content = f"""Document: {header_1.strip()}
@@ -129,26 +93,14 @@ Section: {section_title}
 {section.page_content.strip()}""".strip()
 
 
-            # ------------------------------------------------
-            # UPDATE CONTENT
-            # ------------------------------------------------
-
             section.page_content = structured_content
 
-
-            # ------------------------------------------------
-            # STORE CHUNK
-            # ------------------------------------------------
 
             all_chunks.append(section)
 
 
     return all_chunks
 
-
-# ============================================================
-# RUN DIRECTLY
-# ============================================================
 
 if __name__ == "__main__":
 
