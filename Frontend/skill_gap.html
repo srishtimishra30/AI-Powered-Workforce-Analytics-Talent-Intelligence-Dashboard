@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skill Gap Matrix - Workforce Analytics</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <aside class="app-sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">⚡</div>
+      <div class="brand-name">WorkforceAI</div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/dashboard" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="/employees" class="nav-link {% if active_page == 'employees' %}active{% endif %}">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        <span>Employees</span>
+      </a>
+      <a href="/attrition" class="nav-link {% if active_page == 'attrition' %}active{% endif %}">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+        <span>Attrition Analysis</span>
+      </a>
+      <a href="/skill_gap" class="nav-link {% if active_page == 'skill_gap' %}active{% endif %}">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <span>Skill Gap Matrix</span>
+      </a>
+      <a href="/predictions" class="nav-link {% if active_page == 'predictions' %}active{% endif %}">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        <span>ML Simulator</span>
+      </a>
+      <a href="/recommendations" class="nav-link {% if active_page == 'recommendations' %}active{% endif %}">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+        <span>AI Recommendations</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <span>v2.4 Production</span>
+      <span class="badge-live">Active</span>
+    </div>
+  </aside>
+
+  <main class="app-main">
+    <header class="app-header">
+      <div class="header-title">
+        <h1>Competency & Skill Gap Intelligence Matrix</h1>
+        <p>Analyze workforce capability gaps, benchmark against role standards, and assign learning academies</p>
+      </div>
+    </header>
+
+    <div class="content-container">
+      <!-- Top Metrics -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header"><span class="stat-label">Avg Competency Gap</span><div class="stat-icon purple">🎯</div></div>
+          <div class="stat-value">{{ stats.avg_skill_gap }}%</div>
+          <div class="stat-sub">Across 15,000 Employees</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><span class="stat-label">Role-Ready Talent</span><div class="stat-icon green">✅</div></div>
+          <div class="stat-value">{{ stats.ready_count }}</div>
+          <div class="stat-sub">{{ stats.ready_pct }}% of organization</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><span class="stat-label">Developing Pipeline</span><div class="stat-icon blue">📈</div></div>
+          <div class="stat-value">{{ stats.dev_count }}</div>
+          <div class="stat-sub">{{ stats.dev_pct }}% progressing</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><span class="stat-label">Upskilling Priority</span><div class="stat-icon amber">⚠️</div></div>
+          <div class="stat-value">{{ stats.upskill_count }}</div>
+          <div class="stat-sub">{{ stats.upskill_pct }}% requiring academies</div>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="charts-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 24px;">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Department Competency Gap Comparison</h3>
+            <span class="chart-tag">Deficit Score (%)</span>
+          </div>
+          <div class="chart-wrapper" style="position: relative; height: 280px;">
+            <canvas id="deptGapChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Talent Readiness Breakdown</h3>
+            <span class="chart-tag">Cohort Distribution</span>
+          </div>
+          <div class="chart-wrapper" style="position: relative; height: 280px;">
+            <canvas id="readinessChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Role Benchmark Matrix Table -->
+      <div class="section-card" style="margin-top: 24px;">
+        <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff;">Organizational Role Competency Benchmarks</h3>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 4px;">Target proficiency scores (1.0 to 5.0) and market compensation ranges</p>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Standard Job Role</th>
+                <th>Department</th>
+                <th>Target Market Salary</th>
+                <th>Tech Target</th>
+                <th>Soft Target</th>
+                <th>Leadership Target</th>
+                <th>Key Strategic Competencies</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for role, bench in role_benchmarks.items() %}
+              <tr>
+                <td><strong>{{ role }}</strong></td>
+                <td><span class="dept-badge">{{ bench.dept }}</span></td>
+                <td><span style="color: #38bdf8; font-weight: 600;">${{ "{:,}".format(bench.min_sal) }} - ${{ "{:,}".format(bench.max_sal) }}</span></td>
+                <td><span class="badge badge-success">{{ bench.tech }} / 5.0</span></td>
+                <td><span class="badge badge-info">{{ bench.soft }} / 5.0</span></td>
+                <td><span class="badge badge-warning">{{ bench.lead }} / 5.0</span></td>
+                <td style="color: #cbd5e1; font-size: 0.85rem;">{{ bench.skills }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Learning Academies & Upskilling Programs -->
+      <div class="section-card" style="margin-top: 24px;">
+        <div class="section-header" style="margin-bottom: 16px;">
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff;">Recommended Enterprise Learning Academies</h3>
+          <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 4px;">Curated upskilling modules targeted at closing high-impact competency gaps</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+          <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="color: #38bdf8; font-weight: 700; font-size: 0.85rem; text-transform: uppercase;">Technical Academy</span>
+              <span class="badge badge-danger">High Urgency</span>
+            </div>
+            <h4 style="color: #fff; font-size: 1rem; margin-bottom: 6px;">Enterprise Cloud Architecture & Distributed Data Systems</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem; line-height: 1.4;">Mastering multi-cloud deployments, Kubernetes cluster scaling, microservices design, and enterprise data streams.</p>
+            <div style="margin-top: 12px; display: flex; justify-content: space-between; color: #cbd5e1; font-size: 0.8rem;">
+              <span>⏱️ Duration: 4 Weeks</span>
+              <span>🎓 Level: Advanced</span>
+            </div>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 12px; padding: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="color: #c084fc; font-weight: 700; font-size: 0.85rem; text-transform: uppercase;">Soft Skills Academy</span>
+              <span class="badge badge-info">Medium Urgency</span>
+            </div>
+            <h4 style="color: #fff; font-size: 1rem; margin-bottom: 6px;">Executive Stakeholder Influence & Strategic Negotiation</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem; line-height: 1.4;">Cross-functional alignment, executive presentation techniques, and collaborative conflict resolution for senior contributors.</p>
+            <div style="margin-top: 12px; display: flex; justify-content: space-between; color: #cbd5e1; font-size: 0.8rem;">
+              <span>⏱️ Duration: 2 Weeks</span>
+              <span>🎓 Level: All Levels</span>
+            </div>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="color: #fbbf24; font-weight: 700; font-size: 0.85rem; text-transform: uppercase;">Leadership Academy</span>
+              <span class="badge badge-danger">High Urgency</span>
+            </div>
+            <h4 style="color: #fff; font-size: 1rem; margin-bottom: 6px;">Strategic People Leadership & Talent Retention Coaching</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem; line-height: 1.4;">Engineering retention protocols, burnout diagnosis, stay-interview mastery, and career pathway coaching for engineering managers.</p>
+            <div style="margin-top: 12px; display: flex; justify-content: space-between; color: #cbd5e1; font-size: 0.8rem;">
+              <span>⏱️ Duration: 4 Weeks</span>
+              <span>🎓 Level: Executive</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const chartData = {{ chart_data | safe }};
+
+    // 1. Department Competency Gap Chart
+    const ctxDept = document.getElementById('deptGapChart').getContext('2d');
+    new Chart(ctxDept, {
+      type: 'bar',
+      data: {
+        labels: chartData.dept_labels,
+        datasets: [{
+          label: 'Avg Skill Gap Score (%)',
+          data: chartData.dept_gaps,
+          backgroundColor: [
+            'rgba(56, 189, 248, 0.75)',
+            'rgba(168, 85, 247, 0.75)',
+            'rgba(244, 63, 94, 0.75)',
+            'rgba(245, 158, 11, 0.75)',
+            'rgba(16, 185, 129, 0.75)',
+            'rgba(99, 102, 241, 0.75)'
+          ],
+          borderColor: 'rgba(255, 255, 255, 0.1)',
+          borderWidth: 1,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+          y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' }, beginAtZero: true }
+        }
+      }
+    });
+
+    // 2. Readiness Cohort Donut Chart
+    const ctxReady = document.getElementById('readinessChart').getContext('2d');
+    new Chart(ctxReady, {
+      type: 'doughnut',
+      data: {
+        labels: ['Ready', 'Developing', 'Needs Upskilling'],
+        datasets: [{
+          data: chartData.readiness_counts,
+          backgroundColor: ['#10b981', '#38bdf8', '#f59e0b'],
+          borderColor: '#0f172a',
+          borderWidth: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#cbd5e1', boxWidth: 12, padding: 12 }
+          }
+        },
+        cutout: '70%'
+      }
+    });
+  </script>
+</body>
+</html>

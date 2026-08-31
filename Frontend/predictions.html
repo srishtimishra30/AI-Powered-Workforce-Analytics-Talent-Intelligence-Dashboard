@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ML Flight Risk Simulator - Workforce Analytics</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <aside class="app-sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">⚡</div>
+    <div class="brand-name">WorkforceAI</div>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="/dashboard" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="/employees" class="nav-link {% if active_page == 'employees' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      <span>Employees</span>
+    </a>
+    <a href="/attrition" class="nav-link {% if active_page == 'attrition' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+      <span>Attrition Analysis</span>
+    </a>
+    <a href="/skill_gap" class="nav-link {% if active_page == 'skill_gap' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      <span>Skill Gap Matrix</span>
+    </a>
+    <a href="/predictions" class="nav-link {% if active_page == 'predictions' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      <span>ML Simulator</span>
+    </a>
+    <a href="/recommendations" class="nav-link {% if active_page == 'recommendations' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      <span>AI Recommendations</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <span>v2.4 Production</span>
+    <span class="badge-live">Active</span>
+  </div>
+</aside>
+  <main class="app-main">
+    <header class="app-header">
+      <div class="header-title">
+        <h1>ML Attrition & Scenario Simulator</h1>
+        <p>Interactive "What-If" prediction model to test retention interventions and compensation adjustments</p>
+      </div>
+      <div class="header-actions">
+        <button id="resetFormBtn" class="btn btn-outline btn-sm">Reset Defaults</button>
+      </div>
+    </header>
+
+    <div class="content-container">
+      <div class="charts-grid">
+        <div class="card col-7">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Adjust Employee Parameters</div>
+              <div class="card-subtitle">Real-time inference generated upon slider change</div>
+            </div>
+          </div>
+          <form id="simulatorForm" style="display:flex; flex-direction:column; gap:16px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+              <div>
+                <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Department</label>
+                <select id="simDept" class="form-select" style="width:100%;">
+                  <option value="Engineering">Engineering</option>
+                  <option value="Data & AI">Data & AI</option>
+                  <option value="Product">Product</option>
+                  <option value="Sales">Sales</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Human Resources">Human Resources</option>
+                  <option value="Finance">Finance</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Job Role</label>
+                <select id="simRole" class="form-select" style="width:100%;">
+                  {% for role in roles %}
+                  <option value="{{ role }}">{{ role }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:6px;">
+                <span>Monthly Compensation ($)</span>
+                <strong id="valSalary">$7,500</strong>
+              </div>
+              <input type="range" id="simSalary" class="range-slider" min="3000" max="18000" step="250" value="7500">
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:6px;">
+                  <span>Job Satisfaction (1-4)</span>
+                  <strong id="valJobSat">3</strong>
+                </div>
+                <input type="range" id="simJobSat" class="range-slider" min="1" max="4" step="1" value="3">
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:6px;">
+                  <span>Work-Life Balance (1-4)</span>
+                  <strong id="valWLB">3</strong>
+                </div>
+                <input type="range" id="simWLB" class="range-slider" min="1" max="4" step="1" value="3">
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:6px;">
+                  <span>Years Since Promotion</span>
+                  <strong id="valPromo">2 yrs</strong>
+                </div>
+                <input type="range" id="simPromo" class="range-slider" min="0" max="10" step="1" value="2">
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:6px;">
+                  <span>Commute Distance</span>
+                  <strong id="valDist">8 miles</strong>
+                </div>
+                <input type="range" id="simDist" class="range-slider" min="1" max="35" step="1" value="8">
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+              <div>
+                <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">OverTime Requirement</label>
+                <select id="simOverTime" class="form-select" style="width:100%;">
+                  <option value="No">No OverTime</option>
+                  <option value="Yes">Yes (Regular OverTime)</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">Business Travel</label>
+                <select id="simTravel" class="form-select" style="width:100%;">
+                  <option value="Travel_Rarely">Travel Rarely</option>
+                  <option value="Non-Travel">Non-Travel</option>
+                  <option value="Travel_Frequently">Travel Frequently</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:6px;">
+                <span>Skill Gap Score (%)</span>
+                <strong id="valSkillGap">20%</strong>
+              </div>
+              <input type="range" id="simSkillGap" class="range-slider" min="0" max="80" step="5" value="20">
+            </div>
+          </form>
+        </div>
+
+        <div class="card col-5">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Live ML Risk Output</div>
+              <div class="card-subtitle">Gradient Boosting inference engine</div>
+            </div>
+          </div>
+          <div class="gauge-box">
+            <div id="outRiskScore" class="gauge-score" style="color: #10b981;">18.4%</div>
+            <div id="outRiskBadge" style="margin-top:8px;">
+              <span class="badge badge-low">Low Flight Risk</span>
+            </div>
+            <p id="outRiskDesc" style="color:var(--text-muted); font-size:0.85rem; margin-top:12px;">
+              Employee demonstrates healthy compensation and satisfaction parameters.
+            </p>
+          </div>
+          <hr style="border-color: var(--border-color); margin: 20px 0;">
+          <h4 style="font-size: 0.88rem; margin-bottom: 10px; color: #cbd5e1;">Key Prescriptions & Counter-Measures:</h4>
+          <div id="outPrescriptions" style="display:flex; flex-direction:column; gap:10px; font-size:0.82rem;">
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const simInputs = {
+      salary: document.getElementById('simSalary'),
+      jobSat: document.getElementById('simJobSat'),
+      wlb: document.getElementById('simWLB'),
+      promo: document.getElementById('simPromo'),
+      dist: document.getElementById('simDist'),
+      overTime: document.getElementById('simOverTime'),
+      travel: document.getElementById('simTravel'),
+      dept: document.getElementById('simDept'),
+      role: document.getElementById('simRole'),
+      skillGap: document.getElementById('simSkillGap')
+    };
+
+    const valLabels = {
+      salary: document.getElementById('valSalary'),
+      jobSat: document.getElementById('valJobSat'),
+      wlb: document.getElementById('valWLB'),
+      promo: document.getElementById('valPromo'),
+      dist: document.getElementById('valDist'),
+      skillGap: document.getElementById('valSkillGap')
+    };
+
+    function updateLabels() {
+      valLabels.salary.textContent = '$' + Number(simInputs.salary.value).toLocaleString();
+      valLabels.jobSat.textContent = simInputs.jobSat.value;
+      valLabels.wlb.textContent = simInputs.wlb.value;
+      valLabels.promo.textContent = simInputs.promo.value + ' yrs';
+      valLabels.dist.textContent = simInputs.dist.value + ' miles';
+      valLabels.skillGap.textContent = simInputs.skillGap.value + '%';
+    }
+
+    async function triggerPrediction() {
+      updateLabels();
+      const payload = {
+        MonthlyIncome: Number(simInputs.salary.value),
+        JobSatisfaction: Number(simInputs.jobSat.value),
+        WorkLifeBalance: Number(simInputs.wlb.value),
+        YearsSinceLastPromotion: Number(simInputs.promo.value),
+        DistanceFromHome: Number(simInputs.dist.value),
+        OverTime: simInputs.overTime.value,
+        BusinessTravel: simInputs.travel.value,
+        Department: simInputs.dept.value,
+        JobRole: simInputs.role.value,
+        SkillGapScore: Number(simInputs.skillGap.value),
+        Age: 35,
+        TotalWorkingYears: 8,
+        YearsAtCompany: 4,
+        YearsInCurrentRole: 2,
+        YearsWithCurrManager: 2,
+        EnvironmentSatisfaction: Number(simInputs.jobSat.value),
+        JobInvolvement: 3,
+        PerformanceRating: 3,
+        TrainingTimesLastYear: 2,
+        NumCompaniesWorked: 2,
+        StockOptionLevel: 1,
+        TechnicalSkillProficiency: 3.5,
+        SoftSkillProficiency: 3.5,
+        LeadershipProficiency: 3.0,
+        Gender: 'Female',
+        MaritalStatus: 'Married',
+        EducationField: 'Computer Science'
+      };
+
+      try {
+        const res = await fetch('/api/predict_attrition', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        
+        const scoreEl = document.getElementById('outRiskScore');
+        const badgeEl = document.getElementById('outRiskBadge');
+        const descEl = document.getElementById('outRiskDesc');
+        const prescEl = document.getElementById('outPrescriptions');
+
+        scoreEl.textContent = (result.risk_score * 100).toFixed(1) + '%';
+        if (result.risk_level === 'High') {
+          scoreEl.style.color = '#ef4444';
+          badgeEl.innerHTML = '<span class="badge badge-high">High Flight Risk</span>';
+          descEl.textContent = 'Critical threshold exceeded. Urgent retention actions required to prevent near-term resignation.';
+        } else if (result.risk_level === 'Medium') {
+          scoreEl.style.color = '#f59e0b';
+          badgeEl.innerHTML = '<span class="badge badge-med">Medium Flight Risk</span>';
+          descEl.textContent = 'Moderate turnover indicators detected. Targeted check-ins recommended.';
+        } else {
+          scoreEl.style.color = '#10b981';
+          badgeEl.innerHTML = '<span class="badge badge-low">Low Flight Risk</span>';
+          descEl.textContent = 'Employee demonstrates stable retention indicators with strong organizational loyalty.';
+        }
+
+        prescEl.innerHTML = '';
+        result.recommendations.forEach(item => {
+          const div = document.createElement('div');
+          div.style.padding = '8px 12px';
+          div.style.background = '#0f172a';
+          div.style.borderRadius = '6px';
+          div.style.borderLeft = '3px solid #38bdf8';
+          div.textContent = item;
+          prescEl.appendChild(div);
+        });
+      } catch (err) {
+        console.error('Prediction API Error:', err);
+      }
+    }
+
+    Object.values(simInputs).forEach(input => {
+      input.addEventListener('input', triggerPrediction);
+      input.addEventListener('change', triggerPrediction);
+    });
+
+    document.getElementById('resetFormBtn').addEventListener('click', () => {
+      simInputs.salary.value = 7500;
+      simInputs.jobSat.value = 3;
+      simInputs.wlb.value = 3;
+      simInputs.promo.value = 2;
+      simInputs.dist.value = 8;
+      simInputs.overTime.value = 'No';
+      simInputs.travel.value = 'Travel_Rarely';
+      simInputs.skillGap.value = 20;
+      triggerPrediction();
+    });
+
+    document.addEventListener('DOMContentLoaded', triggerPrediction);
+  </script>
+</body>
+</html>
