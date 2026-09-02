@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attrition Analytics - Workforce Analytics</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <aside class="app-sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">⚡</div>
+    <div class="brand-name">WorkforceAI</div>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="/dashboard" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="/employees" class="nav-link {% if active_page == 'employees' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      <span>Employees</span>
+    </a>
+    <a href="/attrition" class="nav-link {% if active_page == 'attrition' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+      <span>Attrition Analysis</span>
+    </a>
+    <a href="/skill_gap" class="nav-link {% if active_page == 'skill_gap' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      <span>Skill Gap Matrix</span>
+    </a>
+    <a href="/predictions" class="nav-link {% if active_page == 'predictions' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      <span>ML Simulator</span>
+    </a>
+    <a href="/recommendations" class="nav-link {% if active_page == 'recommendations' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      <span>AI Recommendations</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <span>v2.4 Production</span>
+    <span class="badge-live">Active</span>
+  </div>
+</aside>
+  <main class="app-main">
+    <header class="app-header">
+      <div class="header-title">
+        <h1>Attrition & Flight Risk Analytics</h1>
+        <p>Discover macro drivers, overtime impacts, and compensation disparities causing turnover</p>
+      </div>
+    </header>
+
+    <div class="content-container">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header"><span class="stat-label">Overall Turnover</span><div class="stat-icon red">📉</div></div>
+          <div class="stat-value">{{ stats.attrition_rate }}%</div>
+          <div class="stat-sub">{{ stats.total_exits }} total exits</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><span class="stat-label">OverTime Attrition</span><div class="stat-icon red">⏰</div></div>
+          <div class="stat-value">{{ stats.ot_attrition_rate }}%</div>
+          <div class="stat-sub">vs {{ stats.non_ot_attrition_rate }}% for standard hours</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><span class="stat-label">Promotion Lag Risk</span><div class="stat-icon yellow">⏳</div></div>
+          <div class="stat-value">{{ stats.promo_lag_risk }}%</div>
+          <div class="stat-sub">>3 yrs without promotion</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><span class="stat-label">Long Commute Risk</span><div class="stat-icon purple">🚗</div></div>
+          <div class="stat-value">{{ stats.commute_risk }}%</div>
+          <div class="stat-sub">>20 miles commute distance</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="card col-6">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Turnover by Job Role</div>
+              <div class="card-subtitle">Attrition rate per organizational role</div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="roleAttritionChart"></canvas>
+          </div>
+        </div>
+        <div class="card col-6">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Attrition vs OverTime Requirement</div>
+              <div class="card-subtitle">Proportion of exits categorized by overtime demands</div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="overtimeChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="card col-8">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Monthly Income vs Attrition Distribution</div>
+              <div class="card-subtitle">Turnover rate across compensation brackets</div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="salaryBracketChart"></canvas>
+          </div>
+        </div>
+        <div class="card col-4">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Key Turnover Drivers</div>
+              <div class="card-subtitle">Global ML Feature Importance</div>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+            {% for feat, imp in top_features[:6] %}
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:4px;">
+                <span>{{ feat }}</span>
+                <strong>{{ "{:.1f}".format(imp * 100) }}%</strong>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" data-width="{{ imp * 250 }}" style="background-color: var(--accent-primary);"></div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script id="chart-data" type="application/json">{{ chart_data | safe }}</script>
+  <script src="/static/charts.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const data = JSON.parse(document.getElementById('chart-data').textContent);
+      document.querySelectorAll('.progress-bar-fill').forEach(el => {
+        const width = el.dataset.width;
+        if (width) el.style.width = width + '%';
+      });
+      createBarChart('roleAttritionChart', data.role_labels, data.role_values, 'Attrition Rate %', '#ef4444');
+      createDonutChart('overtimeChart', ['OverTime: Yes', 'OverTime: No'], [data.ot_counts.Yes, data.ot_counts.No], ['#ef4444', '#10b981']);
+      createBarChart('salaryBracketChart', data.salary_brackets, data.salary_rates, 'Attrition % in Bracket', '#38bdf8');
+    });
+  </script>
+</body>
+</html>

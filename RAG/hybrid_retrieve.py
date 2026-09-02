@@ -78,7 +78,6 @@ def keyword_retrieve(query, k=5):
     results = []
 
     for index in ranked_indexes[:k]:
- (score, Document)
 
         results.append(
             (
