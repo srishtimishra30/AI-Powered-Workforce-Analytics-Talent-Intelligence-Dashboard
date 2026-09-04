@@ -1,33 +1,31 @@
-# ── Database ──────────────────────────────────────────────────────────────────
+# Database 
 SQLAlchemy==2.0.31
 pg8000==1.31.2
 python-dotenv==1.0.1
 
-# ── Data / ML ─────────────────────────────────────────────────────────────────
+# Data / ML
 pandas==2.2.3
 numpy==1.26.4
 scikit-learn==1.5.0
 lightgbm==4.4.0
 joblib==1.4.2
 
-# ── Web framework ─────────────────────────────────────────────────────────────
+# Web framework
 fastapi==0.111.0
 uvicorn[standard]==0.30.1
 pydantic==2.7.4
 jinja2==3.1.0
 python-multipart==0.0.9
 
-# ── LangChain (lightweight subset — no HuggingFace / Chroma) ─────────────────
+# LangChain
 langchain-core==0.2.0
 langchain-community==0.2.0
 langchain-text-splitters==0.2.0
 
-# ── RAG retrieval ─────────────────────────────────────────────────────────────
+# RAG retrieval 
 rank_bm25==0.2.2
 faiss-cpu==1.15.0
 
-# ── LLM APIs (free tier) ──────────────────────────────────────────────────────
-# Primary  : Groq  — free at https://console.groq.com
+# LLM APIs 
 groq>=0.11.0
-# Fallback : Google Gemini Flash — free at https://aistudio.google.com
 google-generativeai==0.7.2
