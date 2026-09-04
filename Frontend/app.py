@@ -509,8 +509,8 @@ def api_predict(data: PredictionInput):
 
 if __name__ == "__main__":
     import uvicorn
-    print("=" * 65)
-    print("  WORKFORCE ANALYTICS SERVER (FastAPI, FEATURE-ENGINEERED 63 FEATURES)")
-    print("  Localhost URL:  http://127.0.0.1:5000")
-    print("=" * 65)
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", 5000))
+    )
