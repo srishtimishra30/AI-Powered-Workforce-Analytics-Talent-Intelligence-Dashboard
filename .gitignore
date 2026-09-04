@@ -19,3 +19,13 @@ venv/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Old Chroma vectorstore binaries (replaced by TF-IDF + FAISS)
+RAG/vectorstore/*.sqlite3
+RAG/vectorstore/*/
+
+# FAISS build artefacts — regenerated at build time via create_vectorstore.py
+# Comment out the lines below if you prefer to commit pre-built indices
+RAG/vectorstore/faiss_index.bin
+RAG/vectorstore/tfidf_vectorizer.pkl
+RAG/vectorstore/chunks_metadata.pkl

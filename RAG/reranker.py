@@ -1,46 +1,64 @@
-from sentence_transformers import CrossEncoder
+"""
+Lightweight cosine-similarity reranker using sklearn's TfidfVectorizer.
 
-MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+Replaces:
+  - sentence-transformers CrossEncoder  (downloads PyTorch + cross-encoder
+    model ~100 MB, requires ~1.5 GB PyTorch install)
 
-print("=" * 70)
-print("LOADING RERANKER")
-print("=" * 70)
+With:
+  - sklearn cosine_similarity            (pure Python, zero extra install,
+    already used by hybrid_retrieve.py)
 
-reranker = CrossEncoder(MODEL_NAME)
+The reranker scores each (query, chunk) pair by TF-IDF cosine similarity
+and re-sorts the candidates, giving a fast and dependency-free re-ranking
+step that is good enough for a small workforce knowledge base.
+"""
 
-print("Reranker loaded successfully.")
+from typing import List
 
-def rerank_documents(query, documents, top_k=3):
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from langchain_core.documents import Document
 
+
+def rerank_documents(
+    query: str,
+    documents: List[Document],
+    top_k: int = 3
+) -> List[tuple]:
+    """
+    Re-rank *documents* against *query* using TF-IDF cosine similarity.
+
+    Parameters
+    ----------
+    query     : the user's question
+    documents : candidate documents from RRF fusion
+    top_k     : how many top documents to return
+
+    Returns
+    -------
+    List of (score: float, document: Document) sorted highest-score-first,
+    capped at top_k.
+    """
     if not documents:
         return []
-    pairs = []
 
-    for document in documents:
+    corpus = [query] + [doc.page_content for doc in documents]
 
-        pairs.append(
-            (
-                query,
-                document.page_content
-            )
-        )
+    vectorizer = TfidfVectorizer(ngram_range=(1, 2), sublinear_tf=True)
+    tfidf_matrix = vectorizer.fit_transform(corpus)
 
-    scores = reranker.predict(pairs)
+    # Row 0 is the query; rows 1..N are the documents
+    query_vec = tfidf_matrix[0]
+    doc_vecs   = tfidf_matrix[1:]
 
-    ranked_documents = []
+    scores = cosine_similarity(query_vec, doc_vecs).flatten()
 
-    for document, score in zip(documents, scores):
-
-        ranked_documents.append(
-            (
-                float(score),
-                document
-            )
-        )
-
-    ranked_documents.sort(
+    ranked = sorted(
+        zip(scores.tolist(), documents),
         key=lambda x: x[0],
         reverse=True
     )
 
-    return ranked_documents[:top_k]
+    return ranked[:top_k]

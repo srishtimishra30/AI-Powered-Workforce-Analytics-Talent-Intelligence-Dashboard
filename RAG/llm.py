@@ -1,9 +1,12 @@
-import json
 import os
-import urllib.request
+from pathlib import Path
 from typing import Optional
 
+from dotenv import load_dotenv
 from langchain_core.prompts import PromptTemplate
+
+# Load .env from the repo root (two levels up from RAG/llm.py)
+load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
 
 PROMPT_TEMPLATE = """You are an AI assistant for workforce analytics.
@@ -29,97 +32,71 @@ prompt = PromptTemplate(
 )
 
 
-def query_ollama(
-    formatted_prompt: str,
-    model_name: str = "llama3",
-    host: str = "http://localhost:11434"
+def query_groq(
+    question: str,
+    context: str,
+    model_name: str = "openai/gpt-oss-20b"
 ) -> Optional[str]:
     """
-    Query local Ollama server via REST API endpoint.
-    Returns None if Ollama isn't running (e.g. on a deployed server) -
-    generate_answer() will then fall back to the Claude API below.
+    Query the Groq API (free tier).
+    Uses openai/gpt-oss-20b — available on the free Groq plan.
+    Sign up at https://console.groq.com to get a free API key.
     """
-    url = f"{host}/api/generate"
-    payload = {
-        "model": model_name,
-        "prompt": formatted_prompt,
-        "stream": False
-    }
-
-    headers = {"Content-Type": "application/json"}
-    data = json.dumps(payload).encode("utf-8")
-
     try:
-        req = urllib.request.Request(
-            url,
-            data=data,
-            headers=headers,
-            method="POST"
+        from groq import Groq
+
+        api_key = os.environ.get("GROQ_API_KEY")
+        if not api_key:
+            return None
+
+        client = Groq(api_key=api_key)
+        formatted_prompt = prompt.format(
+            context=context,
+            question=question
         )
-        with urllib.request.urlopen(req, timeout=5) as response:
-            result = json.loads(response.read().decode("utf-8"))
-            return result.get("response", "").strip()
-    except Exception:
-        # Ollama server unreachable (normal on a deployed server - no
-        # local machine to run Ollama on) or model not loaded
+
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=[{"role": "user", "content": formatted_prompt}],
+            max_tokens=400,
+            temperature=0.2,
+        )
+        return response.choices[0].message.content.strip()
+
+    except Exception as e:
+        print(f"[LLM Notice] Groq API error: {e}")
         return None
-
-
-def query_claude_fallback(question: str, context: str) -> str:
-    """
-    Fallback LLM generator using the Anthropic Claude API.
-    Used automatically whenever Ollama isn't reachable - this is what
-    runs on a deployed server, since it doesn't need a large local
-    model or a GPU, just a lightweight web request.
-    """
-    from anthropic import Anthropic
-
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        return ("Information is not available - ANTHROPIC_API_KEY is not "
-                "set, so the fallback answer generator cannot run.")
-
-    client = Anthropic(api_key=api_key)
-
-    formatted_prompt = prompt.format(context=context, question=question)
-
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=300,
-        messages=[{"role": "user", "content": formatted_prompt}]
-    )
-    return response.content[0].text.strip()
 
 
 def generate_answer(
     question: str,
     context: str,
-    model_name: str = "llama3",
-    ollama_host: str = "http://localhost:11434"
+    model_name: str = "openai/gpt-oss-20b",
+    **kwargs
 ) -> str:
     """
-    Generate a grounded answer for the question using context.
-    Tries Ollama first (free, local, great for development). If that's
-    not reachable - which will always be the case on a deployed server
-    with no Ollama installed - falls back to the Claude API instead.
+    Generate a grounded answer for the question using the retrieved context.
+    Uses Groq API (free tier — llama-3.3-70b-versatile).
     """
-    formatted_prompt = prompt.format(context=context, question=question)
-
-    answer = query_ollama(
-        formatted_prompt=formatted_prompt,
-        model_name=model_name,
-        host=ollama_host
-    )
-
+    answer = query_groq(question, context, model_name)
     if answer:
         return answer
-    print(f"\n[LLM Notice] Could not connect to Ollama at {ollama_host}.")
-    print("[LLM Notice] Using Claude API fallback to generate answer...\n")
-    return query_claude_fallback(question, context)
+
+    return (
+        "I could not generate an answer because the GROQ_API_KEY is not configured "
+        "or the Groq API is unavailable. "
+        "Please set GROQ_API_KEY (free at https://console.groq.com) "
+        "in your environment variables."
+    )
 
 
 if __name__ == "__main__":
-    sample_context = "Document: Employee Retention Guidelines\nSection: Retention Risk Indicators\n\n1. High workload\nEmployees consistently working excessive hours may experience higher levels of stress and reduced job satisfaction."
+    sample_context = (
+        "Document: Employee Retention Guidelines\n"
+        "Section: Retention Risk Indicators\n\n"
+        "1. High workload\nEmployees consistently working excessive hours "
+        "may experience higher levels of stress and reduced job satisfaction."
+    )
     sample_question = "What causes reduced job satisfaction?"
 
     print("Testing LLM generation...")

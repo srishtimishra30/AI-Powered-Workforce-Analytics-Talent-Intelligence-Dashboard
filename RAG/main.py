@@ -3,7 +3,7 @@ from llm import generate_answer
 
 def run_rag_pipeline(
     question: str,
-    model_name: str = "llama3",
+    model_name: str = "openai/gpt-oss-20b",
     verbose: bool = True
 ) -> str:
     """
