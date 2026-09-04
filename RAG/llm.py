@@ -1,4 +1,5 @@
 import json
+import os
 import urllib.request
 from typing import Optional
 
@@ -27,6 +28,7 @@ prompt = PromptTemplate(
     input_variables=["context", "question"]
 )
 
+
 def query_ollama(
     formatted_prompt: str,
     model_name: str = "llama3",
@@ -34,6 +36,8 @@ def query_ollama(
 ) -> Optional[str]:
     """
     Query local Ollama server via REST API endpoint.
+    Returns None if Ollama isn't running (e.g. on a deployed server) -
+    generate_answer() will then fall back to the Claude API below.
     """
     url = f"{host}/api/generate"
     payload = {
@@ -52,39 +56,40 @@ def query_ollama(
             headers=headers,
             method="POST"
         )
-        with urllib.request.urlopen(req, timeout=30) as response:
+        with urllib.request.urlopen(req, timeout=5) as response:
             result = json.loads(response.read().decode("utf-8"))
             return result.get("response", "").strip()
     except Exception:
+        # Ollama server unreachable (normal on a deployed server - no
+        # local machine to run Ollama on) or model not loaded
         return None
 
 
-_fallback_tokenizer = None
-_fallback_model = None
-
-def query_huggingface_fallback(question: str, context: str) -> str:
+def query_claude_fallback(question: str, context: str) -> str:
     """
-    Fallback LLM generator using local Transformers (flan-t5-base)
-    if Ollama service is not actively running.
+    Fallback LLM generator using the Anthropic Claude API.
+    Used automatically whenever Ollama isn't reachable - this is what
+    runs on a deployed server, since it doesn't need a large local
+    model or a GPU, just a lightweight web request.
     """
-    global _fallback_tokenizer, _fallback_model
+    from anthropic import Anthropic
 
-    if _fallback_tokenizer is None or _fallback_model is None:
-        print("[LLM Module] Initializing fallback local HuggingFace LLM (google/flan-t5-base)...")
-        from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-        _fallback_tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-base")
-        _fallback_model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-base")
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        return ("Information is not available - ANTHROPIC_API_KEY is not "
+                "set, so the fallback answer generator cannot run.")
 
-    clean_fallback_prompt = f"Answer the question using ONLY the provided context. If the context does not contain the answer, reply 'Information is not available in the knowledge base.'\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:"
+    client = Anthropic(api_key=api_key)
 
-    inputs = _fallback_tokenizer(clean_fallback_prompt, return_tensors="pt", truncation=True, max_length=1024)
-    outputs = _fallback_model.generate(**inputs, max_new_tokens=150, do_sample=False)
-    output_text = _fallback_tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
-    
-    if "---" in output_text:
-        output_text = output_text.split("---")[0].strip()
+    formatted_prompt = prompt.format(context=context, question=question)
 
-    return output_text
+    response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=300,
+        messages=[{"role": "user", "content": formatted_prompt}]
+    )
+    return response.content[0].text.strip()
+
 
 def generate_answer(
     question: str,
@@ -92,7 +97,12 @@ def generate_answer(
     model_name: str = "llama3",
     ollama_host: str = "http://localhost:11434"
 ) -> str:
-    
+    """
+    Generate a grounded answer for the question using context.
+    Tries Ollama first (free, local, great for development). If that's
+    not reachable - which will always be the case on a deployed server
+    with no Ollama installed - falls back to the Claude API instead.
+    """
     formatted_prompt = prompt.format(context=context, question=question)
 
     answer = query_ollama(
@@ -103,10 +113,9 @@ def generate_answer(
 
     if answer:
         return answer
-
-    print(f"\n[LLM Notice] Could not connect to Ollama at {ollama_host} (or model '{model_name}' not loaded).")
-    print("[LLM Notice] Using local HuggingFace LLM fallback to generate answer...\n")
-    return query_huggingface_fallback(question, context)
+    print(f"\n[LLM Notice] Could not connect to Ollama at {ollama_host}.")
+    print("[LLM Notice] Using Claude API fallback to generate answer...\n")
+    return query_claude_fallback(question, context)
 
 
 if __name__ == "__main__":
