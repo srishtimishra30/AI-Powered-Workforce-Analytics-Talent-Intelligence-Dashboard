@@ -10,7 +10,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import httpx
 
-BACKEND_URL = "http://127.0.0.1:8000"
+BACKEND_URL = os.environ.get("BACKEND_URL", "http://127.0.0.1:8000").rstrip("/")
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
