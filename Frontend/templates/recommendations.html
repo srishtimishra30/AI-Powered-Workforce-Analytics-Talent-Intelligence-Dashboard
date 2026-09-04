@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Strategic HR Recommendations - Workforce Analytics</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <aside class="app-sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">⚡</div>
+    <div class="brand-name">WorkforceAI</div>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="/dashboard" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="/employees" class="nav-link {% if active_page == 'employees' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      <span>Employees</span>
+    </a>
+    <a href="/attrition" class="nav-link {% if active_page == 'attrition' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+      <span>Attrition Analysis</span>
+    </a>
+    <a href="/skill_gap" class="nav-link {% if active_page == 'skill_gap' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      <span>Skill Gap Matrix</span>
+    </a>
+    <a href="/predictions" class="nav-link {% if active_page == 'predictions' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      <span>ML Simulator</span>
+    </a>
+    <a href="/recommendations" class="nav-link {% if active_page == 'recommendations' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      <span>AI Recommendations</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <span>v2.4 Production</span>
+    <span class="badge-live">Active</span>
+  </div>
+</aside>
+  <main class="app-main">
+    <header class="app-header">
+      <div class="header-title">
+        <h1>Strategic HR & Talent Optimization Engine</h1>
+        <p>Prioritized organizational interventions, retention blueprints, and targeted learning pathways</p>
+      </div>
+      <div class="header-actions">
+        <span class="badge-live">AI Strategy Engine</span>
+      </div>
+    </header>
+
+    <div class="content-container">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header"><span class="stat-label">Urgent Retentions</span><div class="stat-icon red">🚨</div></div>
+          <div class="stat-value">{{ stats.high_risk_count }}</div>
+          <div class="stat-sub">Immediate action required</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><span class="stat-label">OverTime Relief Targets</span><div class="stat-icon yellow">⏱️</div></div>
+          <div class="stat-value">{{ stats.overtime_burdened }}</div>
+          <div class="stat-sub">Burnout risk flagged</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><span class="stat-label">Promotion Reviews</span><div class="stat-icon purple">🎖️</div></div>
+          <div class="stat-value">{{ stats.promo_lag_count }}</div>
+          <div class="stat-sub">>3 yrs unpromoted top talent</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header"><span class="stat-label">Upskilling Cohort</span><div class="stat-icon blue">📚</div></div>
+          <div class="stat-value">{{ stats.upskill_needed_count }}</div>
+          <div class="stat-sub">Competency acceleration plan</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="card col-6">
+          <div class="card-header">
+            <div>
+              <div class="card-title">1. High-Flight-Risk Retention Protocols</div>
+              <div class="card-subtitle">Direct managerial and compensation adjustments</div>
+            </div>
+          </div>
+          <div class="rec-card high">
+            <strong>Targeted Mid-Cycle Compensation Realignment</strong>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">
+              Identify key contributors whose current compensation falls below the 50th percentile of their job grade. Prioritize salary increments to neutralize external recruiter poaching.
+            </p>
+          </div>
+          <div class="rec-card high">
+            <strong>Burnout Mitigation & Workload Rebalancing</strong>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">
+              Institute an immediate audit for employees logging continuous overtime in Engineering and Sales. Introduce sprint rotations or contract bandwidth augmentation.
+            </p>
+          </div>
+          <div class="rec-card medium">
+            <strong>Manager 1-on-1 Retention Stay Interviews</strong>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">
+              Schedule proactive career trajectory conversations with individuals exceeding 2.5 years without promotion to establish clear milestone expectations.
+            </p>
+          </div>
+        </div>
+
+        <div class="card col-6">
+          <div class="card-header">
+            <div>
+              <div class="card-title">2. Enterprise Upskilling & Skill Gap Closure</div>
+              <div class="card-subtitle">Workforce capability and promotion readiness plans</div>
+            </div>
+          </div>
+          <div class="rec-card low" style="border-left-color: var(--accent-primary);">
+            <strong>Cloud Architecture & System Design Cohort</strong>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">
+              Enroll 42 Software and DevOps engineers in advanced cloud orchestration (Kubernetes & Microservices) to bridge technical proficiency gaps.
+            </p>
+          </div>
+          <div class="rec-card low" style="border-left-color: var(--accent-purple);">
+            <strong>Executive Leadership & People Management Accelerator</strong>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">
+              Launch a 4-week mentoring sprint for Senior Individual Contributors preparing for Technical Lead and Management positions.
+            </p>
+          </div>
+          <div class="rec-card low" style="border-left-color: var(--accent-success);">
+            <strong>Data Literacy & AI-Augmented Analytics Bootcamp</strong>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">
+              Upskill Product, Marketing, and Operations analysts in modern Python, SQL, and predictive analytics tools.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

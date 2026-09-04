@@ -1,0 +1,119 @@
+import json
+import urllib.request
+from typing import Optional
+
+from langchain_core.prompts import PromptTemplate
+
+
+PROMPT_TEMPLATE = """You are an AI assistant for workforce analytics.
+
+Answer the user's question using ONLY the provided context.
+
+If the answer cannot be found in the context, say that the
+information is not available in the knowledge base.
+
+Do not invent facts.
+
+Context:
+{context}
+
+Question:
+{question}
+
+Answer:"""
+
+prompt = PromptTemplate(
+    template=PROMPT_TEMPLATE,
+    input_variables=["context", "question"]
+)
+
+def query_ollama(
+    formatted_prompt: str,
+    model_name: str = "llama3",
+    host: str = "http://localhost:11434"
+) -> Optional[str]:
+    """
+    Query local Ollama server via REST API endpoint.
+    """
+    url = f"{host}/api/generate"
+    payload = {
+        "model": model_name,
+        "prompt": formatted_prompt,
+        "stream": False
+    }
+
+    headers = {"Content-Type": "application/json"}
+    data = json.dumps(payload).encode("utf-8")
+
+    try:
+        req = urllib.request.Request(
+            url,
+            data=data,
+            headers=headers,
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=30) as response:
+            result = json.loads(response.read().decode("utf-8"))
+            return result.get("response", "").strip()
+    except Exception:
+        return None
+
+
+_fallback_tokenizer = None
+_fallback_model = None
+
+def query_huggingface_fallback(question: str, context: str) -> str:
+    """
+    Fallback LLM generator using local Transformers (flan-t5-base)
+    if Ollama service is not actively running.
+    """
+    global _fallback_tokenizer, _fallback_model
+
+    if _fallback_tokenizer is None or _fallback_model is None:
+        print("[LLM Module] Initializing fallback local HuggingFace LLM (google/flan-t5-base)...")
+        from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+        _fallback_tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-base")
+        _fallback_model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-base")
+
+    clean_fallback_prompt = f"Answer the question using ONLY the provided context. If the context does not contain the answer, reply 'Information is not available in the knowledge base.'\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:"
+
+    inputs = _fallback_tokenizer(clean_fallback_prompt, return_tensors="pt", truncation=True, max_length=1024)
+    outputs = _fallback_model.generate(**inputs, max_new_tokens=150, do_sample=False)
+    output_text = _fallback_tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
+    
+    if "---" in output_text:
+        output_text = output_text.split("---")[0].strip()
+
+    return output_text
+
+def generate_answer(
+    question: str,
+    context: str,
+    model_name: str = "llama3",
+    ollama_host: str = "http://localhost:11434"
+) -> str:
+    
+    formatted_prompt = prompt.format(context=context, question=question)
+
+    answer = query_ollama(
+        formatted_prompt=formatted_prompt,
+        model_name=model_name,
+        host=ollama_host
+    )
+
+    if answer:
+        return answer
+
+    print(f"\n[LLM Notice] Could not connect to Ollama at {ollama_host} (or model '{model_name}' not loaded).")
+    print("[LLM Notice] Using local HuggingFace LLM fallback to generate answer...\n")
+    return query_huggingface_fallback(question, context)
+
+
+if __name__ == "__main__":
+    sample_context = "Document: Employee Retention Guidelines\nSection: Retention Risk Indicators\n\n1. High workload\nEmployees consistently working excessive hours may experience higher levels of stress and reduced job satisfaction."
+    sample_question = "What causes reduced job satisfaction?"
+
+    print("Testing LLM generation...")
+    res = generate_answer(sample_question, sample_context)
+    print("\nAnswer:")
+    print(res)
