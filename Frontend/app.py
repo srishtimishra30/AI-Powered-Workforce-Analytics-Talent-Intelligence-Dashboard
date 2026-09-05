@@ -14,9 +14,9 @@ BACKEND_URL = os.environ.get("BACKEND_URL", "http://127.0.0.1:8000").rstrip("/")
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATASET_PATH = os.path.join(BASE_DIR, "..", "Machine Learning", "Featured Engineering.csv")
-ATTRITION_MODEL_PATH = os.path.join(BASE_DIR, "..", "Machine Learning", "models", "attrition_model.pkl")
-SKILL_MODEL_PATH = os.path.join(BASE_DIR, "..", "Machine Learning", "models", "skill_gap_model.pkl")
+DATASET_PATH = os.path.join(BASE_DIR, "..", "Machine learning", "Featured Engineering.csv")
+ATTRITION_MODEL_PATH = os.path.join(BASE_DIR, "..", "Machine learning", "models", "attrition_model.pkl")
+SKILL_MODEL_PATH = os.path.join(BASE_DIR, "..", "Machine learning", "models", "skill_gap_model.pkl")
 
 app = FastAPI(title="Workforce Analytics Frontend")
 
